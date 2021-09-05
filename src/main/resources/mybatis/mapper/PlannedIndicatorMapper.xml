@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="lab.zhang.hermes.dao.PlannedIndicatorDao">
+
+    <resultMap id="BaseResultMap" type="lab.zhang.hermes.entity.indicator.PlannedIndicatorEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="indicator_id" property="indicatorId" jdbcType="BIGINT" />
+        <result column="expression" property="expression" jdbcType="LONGVARCHAR" />
+    </resultMap>
+
+    <sql id="BaseColumnList" >
+        id, indicator_id, expression
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap"  >
+        SELECT
+            <include refid="BaseColumnList" />
+        FROM planned_indicator
+    </select>
+
+    <select id="findAllByIdList" resultMap="BaseResultMap"  >
+        SELECT
+            <include refid="BaseColumnList" />
+        FROM planned_indicator
+        WHERE id IN
+            <foreach collection='idList' item='id' open='(' separator=',' close=')'>
+                "#{id}"
+            </foreach>
+    </select>
+
+    <select id="findOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        SELECT
+            <include refid="BaseColumnList" />
+        FROM planned_indicator
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="lab.zhang.hermes.entity.indicator.PlannedIndicatorEntity"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
+        INSERT INTO
+            planned_indicator (indicator_id,expression)
+        VALUES
+            (#{indicatorId}, #{expression})
+    </insert>
+
+    <update id="update" parameterType="lab.zhang.hermes.entity.indicator.PlannedIndicatorEntity" >
+        UPDATE
+            planned_indicator
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="indicatorId != null">indicator_id = #{indicatorId},</if>
+            <if test="expression != null">expression = #{expression},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long" >
+        DELETE FROM
+            planned_indicator
+        WHERE
+            id =#{id}
+    </delete>
+
+</mapper>
