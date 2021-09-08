@@ -1,4 +1,4 @@
-package unit.lab.zhang.hermes.controller;
+package unit.lab.zhang.hermes.service;
 
 import lab.zhang.apollo.controller.ApolloController;
 import lab.zhang.apollo.pojo.ApolloType;

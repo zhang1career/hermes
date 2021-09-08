@@ -6,6 +6,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author zhangrj
  */
@@ -14,11 +17,26 @@ public class IndicatorEntity extends BaseEntity {
 
     private String name;
     private String expression;
+    /**
+     * many to many relationship
+     */
+    private List<IndicatorEntity> parents;
+    /**
+     * many to many relationship
+     */
+    private List<IndicatorEntity> children;
+
+
+    public IndicatorEntity() {
+    }
 
     public IndicatorEntity(Long id, String name, String expression) {
         this.id = id;
         this.name = name;
         this.expression = expression;
+
+        this.parents = new ArrayList<>();
+        this.children = new ArrayList<>();
     }
 
     public IndicatorEntity(String name, String expression) {

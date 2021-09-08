@@ -15,7 +15,7 @@ public interface IndicatorDao {
 
     IndicatorEntity findOne(long id);
 
-    Long insert(IndicatorEntity entity);
+    int insert(IndicatorEntity entity);
 
     void update(IndicatorEntity entity);
 

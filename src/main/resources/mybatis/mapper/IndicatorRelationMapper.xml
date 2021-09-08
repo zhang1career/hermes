@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="lab.zhang.hermes.dao.IndicatorRelationDao">
+
+    <resultMap id="ParentResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <collection javaType="ArrayList" property="parents" resultMap="ChildrenResultMap" />
+    </resultMap>
+
+    <resultMap id="ChildrenResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <collection javaType="ArrayList" property="children" resultMap="ParentResultMap" />
+    </resultMap>
+
+    <insert id="insertChild">
+        INSERT INTO indicator_indicator (parent_id, child_id)
+        VALUES (#{parentId, jdbcType=BIGINT}, #{childId, jdbcType=BIGINT});
+    </insert>
+
+    <delete id="deleteChild">
+        DELETE
+        FROM indicator_indicator
+        WHERE parent_id = #{parentId}
+          AND child_id = #{childId}
+    </delete>
+
+    <select id="findParents" resultMap="ChildrenResultMap">
+        SELECT p.id   AS id,
+               p.name AS name
+        FROM indicator AS c
+                 LEFT JOIN indicator_indicator AS pc ON c.id = pc.child_id
+                 LEFT JOIN indicator AS p ON p.id = pc.parent_id
+        WHERE c.id = #{id, jdbcType=BIGINT}
+    </select>
+
+    <select id="findChildren" resultMap="ParentResultMap">
+        SELECT c.id   AS id,
+               c.name AS name
+        FROM indicator AS p
+                 LEFT JOIN indicator_indicator AS pc ON p.id = pc.parent_id
+                 LEFT JOIN indicator AS c ON c.id = pc.child_id
+        WHERE p.id = #{id, jdbcType=BIGINT}
+    </select>
+
+</mapper>

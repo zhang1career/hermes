@@ -2,34 +2,37 @@ package lab.zhang.hermes.controller;
 
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lab.zhang.hermes.repo.IndicatorRepo;
+import lab.zhang.hermes.vo.indicator.IndicatorVo;
 import lab.zhang.hermes.vo.ResponseVo;
+import lab.zhang.hermes.vo.indicator.IndicatorVoLite;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author zhangrj
  */
+@CrossOrigin
 @RestController
 public class IndicatorController {
 
     @Autowired
     private IndicatorRepo indicatorRepo;
 
-//    @GetMapping("/indicators")
-//    List<IndicatorVo> all() {
-//        List<IndicatorEntity> indicatorEntityList = indicatorRepo.findAll();
-//        return IndicatorMapper.INSTANCE.voListFrom(indicatorEntityList);
-//    }
-//
-//    @GetMapping("/indicators/{id}")
-//    IndicatorVo one(@PathVariable Long id) {
-//        IndicatorEntity indicatorEntity = indicatorRepo.findOne(id);
-//        return IndicatorMapper.INSTANCE.voFrom(indicatorEntity);
-//    }
+    @GetMapping("/api/indicators")
+    List<IndicatorVoLite> all() {
+        List<IndicatorEntity> indicatorEntityList = indicatorRepo.getList();
+        return IndicatorVoLite.listOf(indicatorEntityList);
+    }
 
-    @PostMapping("/indcators")
+    @GetMapping("/api/indicators/{id}")
+    IndicatorVo one(@PathVariable Long id) {
+        IndicatorEntity indicatorEntity = indicatorRepo.getItem(id);
+        return IndicatorVo.of(indicatorEntity);
+    }
+
+    @PostMapping("/api/indcators")
     ResponseVo<Long> newIndicator(@RequestBody IndicatorEntity indicatorEntity) {
         Long id = indicatorRepo.create(indicatorEntity);
         return new ResponseVo<>(id);
