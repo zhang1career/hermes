@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="lab.zhang.hermes.dao.IndicatorRelationDao">
+<mapper namespace="lab.zhang.hermes.dao.IndicatorIndicatorRelationDao">
 
     <resultMap id="ParentResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
         <id column="id" property="id" jdbcType="BIGINT" />

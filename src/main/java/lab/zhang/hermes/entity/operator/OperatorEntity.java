@@ -10,16 +10,16 @@ import org.apache.commons.text.StringEscapeUtils;
  * @author zhangrj
  */
 @Data
-public class IndicatorOperatorEntity extends BaseEntity {
+public class OperatorEntity extends BaseEntity {
 
     private String clazz;
 
-    public IndicatorOperatorEntity(Long id, String clazz) {
+    public OperatorEntity(Long id, String clazz) {
         this.id = id;
         this.clazz = clazz;
     }
 
-    public IndicatorOperatorEntity(String clazz) {
+    public OperatorEntity(String clazz) {
         this(null, clazz);
     }
 

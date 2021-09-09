@@ -6,11 +6,21 @@
     <resultMap id="BaseResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="name" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
         <result column="expression" property="expression" jdbcType="LONGVARCHAR" />
     </resultMap>
 
     <sql id="BaseColumnList" >
-        id, name, expression
+        id, name, is_deleted
+    </sql>
+
+    <sql id="DetailColumnList" >
+        id, name, operator_id, expression, is_deleted
     </sql>
 
     <select id="findAll" resultMap="BaseResultMap"  >
@@ -19,18 +29,32 @@
         FROM indicator
     </select>
 
-    <select id="findOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+    <select id="findByCondition" resultMap="BaseResultMap"  >
         SELECT
             <include refid="BaseColumnList" />
+        FROM indicator
+        WHERE is_deleted = 0
+            <if test="condition.containsKey('ids')">
+                AND id IN
+                <foreach collection="condition.get('ids')" item="value" open="(" separator="," close=")">
+                    <if test="value != null">${value}</if>
+                </foreach>
+            </if>
+    </select>
+
+    <select id="findOne" parameterType="java.lang.Long" resultMap="DetailResultMap" >
+        SELECT
+            <include refid="DetailColumnList" />
         FROM indicator
         WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity" useGeneratedKeys="true" >
+    <insert id="insert" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
         INSERT INTO
-            indicator (name,expression)
+            indicator (name,operator_id,expression)
         VALUES
-            (#{name}, #{expression})
+            (#{name}, #{operatorId}, #{expression})
     </insert>
 
     <update id="update" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity" >

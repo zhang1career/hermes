@@ -1,4 +1,4 @@
-package lab.zhang.hermes.indicator_operator;
+package lab.zhang.hermes.operator;
 
 import lab.zhang.apollo.bo.Valuable;
 import lab.zhang.apollo.pojo.ParamContext;

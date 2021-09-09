@@ -6,7 +6,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,6 +15,9 @@ import java.util.List;
 public class IndicatorEntity extends BaseEntity {
 
     private String name;
+
+    private long operatorId;
+
     private String expression;
     /**
      * many to many relationship
@@ -30,21 +32,18 @@ public class IndicatorEntity extends BaseEntity {
     public IndicatorEntity() {
     }
 
-    public IndicatorEntity(Long id, String name, String expression) {
+    public IndicatorEntity(Long id, String name, long operatorId, String expression) {
         this.id = id;
         this.name = name;
+        this.operatorId = operatorId;
         this.expression = expression;
 
-        this.parents = new ArrayList<>();
-        this.children = new ArrayList<>();
+        this.parents = null;
+        this.children = null;
     }
 
-    public IndicatorEntity(String name, String expression) {
-        this(null, name, expression);
-    }
-
-    public IndicatorEntity(String expression) {
-        this(null, null, expression);
+    public IndicatorEntity(String name, long operatorId, String expression) {
+        this(null, name, operatorId, expression);
     }
 
     @Override

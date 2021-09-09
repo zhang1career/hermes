@@ -46,7 +46,7 @@ public class IndicatorDaoTest {
 
     @Test
     public void test_insert() {
-        IndicatorEntity item = new IndicatorEntity("测试式3", "{\"name\":\"指标1\",\"type\":1,\"id\":0,\"value\":1}");
+        IndicatorEntity item = new IndicatorEntity("测试式3", 0, "{\"name\":\"指标1\",\"type\":1,\"id\":0,\"value\":1}");
         int id = target.insert(item);
         assertNotNull(id);
         assertTrue(id > 0);

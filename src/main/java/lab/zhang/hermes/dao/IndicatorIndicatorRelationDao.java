@@ -9,7 +9,7 @@ import java.util.List;
  * @author zhangrj
  */
 @Mapper
-public interface IndicatorRelationDao {
+public interface IndicatorIndicatorRelationDao {
 
     int insertChild(long parentId, long childId);
 

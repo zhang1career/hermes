@@ -1,6 +1,6 @@
 package lab.zhang.hermes.repo;
 
-import lab.zhang.apollo.entity.Identical;
+import lab.zhang.hermes.entity.Identical;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="lab.zhang.hermes.dao.IndicatorOperatorDao">
+<mapper namespace="lab.zhang.hermes.dao.OperatorDao">
 
-    <resultMap id="BaseResultMap" type="lab.zhang.hermes.entity.operator.IndicatorOperatorEntity" >
+    <resultMap id="BaseResultMap" type="lab.zhang.hermes.entity.operator.OperatorEntity" >
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="clazz" property="clazz" jdbcType="VARCHAR" />
     </resultMap>
@@ -15,26 +15,26 @@
     <select id="findAll" resultMap="BaseResultMap"  >
         SELECT
             <include refid="BaseColumnList" />
-        FROM indicator_operator
+        FROM operator
     </select>
 
     <select id="findOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
         SELECT
             <include refid="BaseColumnList" />
-        FROM indicator_operator
+        FROM operator
         WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="lab.zhang.hermes.entity.operator.IndicatorOperatorEntity" useGeneratedKeys="true" >
-        INSERT INTO
-            indicator_operator (clazz)
+    <insert id="insert" parameterType="lab.zhang.hermes.entity.operator.OperatorEntity" useGeneratedKeys="true" >
+        INSERT
+        INTO operator (clazz)
         VALUES
             (#{clazz})
     </insert>
 
-    <update id="update" parameterType="lab.zhang.hermes.entity.operator.IndicatorOperatorEntity" >
+    <update id="update" parameterType="lab.zhang.hermes.entity.operator.OperatorEntity" >
         UPDATE
-            indicator_operator
+            operator
         <trim prefix="SET" suffixOverrides=",">
             <if test="clazz != null">clazz = #{clazz},</if>
         </trim>
@@ -42,8 +42,8 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.Long" >
-        DELETE FROM
-            indicator_operator
+        DELETE
+        FROM operator
         WHERE
             id =#{id}
     </delete>
