@@ -11,9 +11,11 @@ import java.util.List;
 @Mapper
 public interface IndicatorIndicatorRelationDao {
 
-    int insertChild(long parentId, long childId);
+    int insert(long parentId, long childId);
 
-    int deleteChild(long parentId, long childId);
+    int insertChildren(long parentId, List<Long> childrenIdList);
+
+    int delete(long parentId, long childId);
 
     List<IndicatorEntity> findChildren(long id);
 

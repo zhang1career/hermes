@@ -16,18 +16,18 @@ public class PlannedIndicatorEntity extends BaseEntity {
 
     private String expression;
 
-    public PlannedIndicatorEntity(Long id, Long indicatorId, String expression) {
+    public PlannedIndicatorEntity(long id, Long indicatorId, String expression) {
         this.id = id;
         this.indicatorId = indicatorId;
         this.expression = expression;
     }
 
-    public PlannedIndicatorEntity(Long indicatorId, String expression) {
-        this(null, indicatorId, expression);
+    public PlannedIndicatorEntity(long indicatorId, String expression) {
+        this(0, indicatorId, expression);
     }
 
     public PlannedIndicatorEntity(String expression) {
-        this(null, null, expression);
+        this(0, null, expression);
     }
 
     @Override

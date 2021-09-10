@@ -8,5 +8,5 @@ public interface Identical {
      * Get id, the entity's primary field
      * @return id
      */
-    Long getId();
+    long getId();
 }

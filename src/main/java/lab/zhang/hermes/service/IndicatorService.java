@@ -33,22 +33,20 @@ public class IndicatorService {
 
 
     public Long createIndicator(String name, long operatorId, List<IndicatorEntity> indicatorEntityList) {
-        List<Long> indicatorIdList = BaseRepo.columnOf(indicatorEntityList, IndicatorEntity::getId);
-        List<Long> operatorIdList = BaseRepo.columnOf(indicatorEntityList, IndicatorEntity::getOperatorId);
         OperatorEntity operatorEntity = operatorRepo.getItem(operatorId);
-        Map<Long, OperatorEntity> operatorEntityDic = operatorRepo.getListIndexById(operatorIdList);
-        String expression = expressionOf(operatorEntity, indicatorEntityList, operatorEntityDic);
+        List<Long> indicatorIdList = BaseRepo.columnOf(indicatorEntityList, IndicatorEntity::getId);
+        String expression = expressionOf(operatorEntity, indicatorEntityList);
         return indicatorRepo.create(name, operatorId, expression, indicatorIdList);
     }
 
-    private String expressionOf(OperatorEntity operatorEntity, @NotNull List<IndicatorEntity> indicatorEntityList, Map<Long, OperatorEntity> operatorEntityDic) {
+    private String expressionOf(OperatorEntity operatorEntity, @NotNull List<IndicatorEntity> indicatorEntityList) {
         Token[] childrenToken = new Token[indicatorEntityList.size()];
         for (int i = 0; i < indicatorEntityList.size(); i++) {
-            OperatorEntity childOperatorEntity = operatorEntityDic.get(indicatorEntityList.get(i).getOperatorId());
+            IndicatorEntity indicatorEntity = indicatorEntityList.get(i);
             childrenToken[i] = new Token(
-                    childOperatorEntity.getName(),
-                    ApolloType.EXTERNAL_OPERATOR,
-                    childOperatorEntity.getId(),
+                    indicatorEntity.getName(),
+                    ApolloType.FRESH_OPERATION,
+                    indicatorEntity.getId(),
                     null);
         }
         Token token = new Token(operatorEntity.getName(), ApolloType.EXTERNAL_OPERATOR, operatorEntity.getId(), childrenToken);

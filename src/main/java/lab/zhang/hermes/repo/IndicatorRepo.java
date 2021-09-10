@@ -59,13 +59,17 @@ public class IndicatorRepo extends BaseRepo {
 
     public Long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
         IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
-        List<IndicatorEntity> children = getList(childrenIdList);
-        indicatorEntity.setChildren(children);
+        List<IndicatorEntity> indicatorEntityList = getList(childrenIdList);
+        indicatorEntity.setChildren(indicatorEntityList);
 
         int count = indicatorDao.insert(indicatorEntity);
         if (count < 1) {
             return null;
         }
+
+        // relation
+        indicatorIndicatorRelationDao.insertChildren(operatorId, childrenIdList);
+
         return indicatorEntity.getId();
     }
 }

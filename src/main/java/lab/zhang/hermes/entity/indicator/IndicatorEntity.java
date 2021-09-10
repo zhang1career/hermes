@@ -32,7 +32,7 @@ public class IndicatorEntity extends BaseEntity {
     public IndicatorEntity() {
     }
 
-    public IndicatorEntity(Long id, String name, long operatorId, String expression) {
+    public IndicatorEntity(long id, String name, long operatorId, String expression) {
         this.id = id;
         this.name = name;
         this.operatorId = operatorId;
@@ -43,7 +43,7 @@ public class IndicatorEntity extends BaseEntity {
     }
 
     public IndicatorEntity(String name, long operatorId, String expression) {
-        this(null, name, operatorId, expression);
+        this(0, name, operatorId, expression);
     }
 
     @Override

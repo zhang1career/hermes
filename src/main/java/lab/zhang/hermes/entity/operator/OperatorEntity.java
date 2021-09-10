@@ -16,18 +16,18 @@ public class OperatorEntity extends BaseEntity {
 
     private String clazz;
 
-    public OperatorEntity(Long id, String name, String clazz) {
+    public OperatorEntity(long id, String name, String clazz) {
         this.id = id;
         this.name = name;
         this.clazz = clazz;
     }
 
-    public OperatorEntity(Long id, String name) {
+    public OperatorEntity(long id, String name) {
         this(id, name, "");
     }
 
     public OperatorEntity(String name, String clazz) {
-        this(null, name, clazz);
+        this(0, name, clazz);
     }
 
     @Override

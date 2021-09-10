@@ -4,10 +4,10 @@ package lab.zhang.hermes.entity;
  * @author zhangrj
  */
 abstract public class BaseEntity implements Identical {
-    protected Long id;
+    protected long id;
 
     @Override
-    public Long getId() {
+    public long getId() {
         return id;
     }
 }

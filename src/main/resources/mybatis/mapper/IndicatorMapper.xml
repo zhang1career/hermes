@@ -52,15 +52,14 @@
 
     <insert id="insert" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
-        INSERT INTO
-            indicator (name,operator_id,expression)
+        INSERT INTO indicator
+            (name,operator_id,expression)
         VALUES
             (#{name}, #{operatorId}, #{expression})
     </insert>
 
     <update id="update" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
-        UPDATE
-            indicator
+        UPDATE indicator
         <trim prefix="SET" suffixOverrides=",">
             <if test="name != null">name = #{name},</if>
             <if test="expression != null">expression = #{expression},</if>
@@ -69,8 +68,7 @@
     </update>
 
     <delete id="delete" parameterType="java.lang.Long" >
-        DELETE FROM
-            indicator
+        DELETE FROM indicator
         WHERE
             id =#{id}
     </delete>

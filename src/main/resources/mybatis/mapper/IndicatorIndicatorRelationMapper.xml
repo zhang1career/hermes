@@ -15,14 +15,25 @@
         <collection javaType="ArrayList" property="children" resultMap="ParentResultMap" />
     </resultMap>
 
-    <insert id="insertChild">
-        INSERT INTO indicator_indicator (parent_id, child_id)
-        VALUES (#{parentId, jdbcType=BIGINT}, #{childId, jdbcType=BIGINT});
+    <insert id="insert">
+        INSERT INTO indicator_indicator
+            (parent_id, child_id)
+        VALUES
+            (#{parentId, jdbcType=BIGINT}, #{childId, jdbcType=BIGINT});
     </insert>
 
-    <delete id="deleteChild">
-        DELETE
-        FROM indicator_indicator
+    <insert id="insertChildren" parameterType="java.util.List">
+        INSERT INTO indicator_indicator
+            (parent_id, child_id)
+        VALUES
+            <foreach collection="childrenIdList" item="element" index="index" open="(" separator="),("  close=")">
+                #{parentId}, #{element}
+            </foreach>
+    </insert>
+
+
+    <delete id="delete">
+        DELETE FROM indicator_indicator
         WHERE parent_id = #{parentId}
           AND child_id = #{childId}
     </delete>
@@ -31,8 +42,8 @@
         SELECT p.id   AS id,
                p.name AS name
         FROM indicator AS c
-                 LEFT JOIN indicator_indicator AS pc ON c.id = pc.child_id
-                 LEFT JOIN indicator AS p ON p.id = pc.parent_id
+        LEFT JOIN indicator_indicator AS pc ON c.id = pc.child_id
+        LEFT JOIN indicator AS p ON p.id = pc.parent_id
         WHERE c.id = #{id, jdbcType=BIGINT}
     </select>
 
@@ -40,9 +51,8 @@
         SELECT c.id   AS id,
                c.name AS name
         FROM indicator AS p
-                 LEFT JOIN indicator_indicator AS pc ON p.id = pc.parent_id
-                 LEFT JOIN indicator AS c ON c.id = pc.child_id
+        LEFT JOIN indicator_indicator AS pc ON p.id = pc.parent_id
+        LEFT JOIN indicator AS c ON c.id = pc.child_id
         WHERE p.id = #{id, jdbcType=BIGINT}
     </select>
-
 </mapper>
