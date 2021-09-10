@@ -3,8 +3,13 @@ package lab.zhang.hermes.repo;
 import lab.zhang.hermes.dao.IndicatorDao;
 import lab.zhang.hermes.dao.IndicatorIndicatorRelationDao;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
+import lab.zhang.hermes.exception.SqlException;
+import lab.zhang.hermes.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +26,9 @@ public class IndicatorRepo extends BaseRepo {
 
     @Autowired
     private IndicatorIndicatorRelationDao indicatorIndicatorRelationDao;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
 
     public List<IndicatorEntity> getList() {
@@ -57,19 +65,34 @@ public class IndicatorRepo extends BaseRepo {
     }
 
 
-    public Long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
+    public long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
+        long indicatorEntityId = 0;
+
+        // prepare
         IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
         List<IndicatorEntity> indicatorEntityList = getList(childrenIdList);
         indicatorEntity.setChildren(indicatorEntityList);
 
-        int count = indicatorDao.insert(indicatorEntity);
-        if (count < 1) {
-            return null;
+        // transaction
+        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try {
+            // indicator table
+            if (indicatorDao.insert(indicatorEntity) < 1) {
+                throw new SqlException("indicator insert failed");
+            }
+            indicatorEntityId = indicatorEntity.getId();
+            // indicator_indicator table
+            List<Long> existedChildrenIdList = BaseRepo.columnOf(indicatorIndicatorRelationDao.findChildren(indicatorEntityId), IndicatorEntity::getId);
+            List<Long> insertingChildrenIdList = ListUtil.diff(childrenIdList, existedChildrenIdList);
+            if (insertingChildrenIdList.size() > 0) {
+                indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, insertingChildrenIdList);
+            }
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            throw e;
         }
+        transactionManager.commit(txStatus);
 
-        // relation
-        indicatorIndicatorRelationDao.insertChildren(operatorId, childrenIdList);
-
-        return indicatorEntity.getId();
+        return indicatorEntityId;
     }
 }
