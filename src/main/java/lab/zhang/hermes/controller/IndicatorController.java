@@ -1,12 +1,8 @@
 package lab.zhang.hermes.controller;
 
+import lab.zhang.hermes.action.indicator.CreateAction;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
-import lab.zhang.hermes.entity.operator.OperatorEntity;
-import lab.zhang.hermes.exception.IllegalParameterException;
 import lab.zhang.hermes.repo.IndicatorRepo;
-import lab.zhang.hermes.repo.OperatorRepo;
-import lab.zhang.hermes.util.ListUtil;
-import lab.zhang.hermes.util.StrUtil;
 import lab.zhang.hermes.vo.ResponseVo;
 import lab.zhang.hermes.vo.indicator.IndicatorVo;
 import lab.zhang.hermes.vo.indicator.IndicatorVoLite;
@@ -26,8 +22,7 @@ public class IndicatorController {
     private IndicatorRepo indicatorRepo;
 
     @Autowired
-    private OperatorRepo operatorRepo;
-    private OperatorRepo operatorRepo1;
+    private CreateAction indicatorCreateAction;
 
     @GetMapping("/api/indicators")
     List<IndicatorVoLite> getList() {
@@ -49,25 +44,11 @@ public class IndicatorController {
                             @RequestParam("operator_id") long operatorId,
                             @RequestParam("indicator_ids") String indicatorIds
     ) {
-        if (StrUtil.isNill(name)) {
-            throw new IllegalParameterException();
+        try {
+            Long id = indicatorCreateAction.act(name, operatorId, indicatorIds);
+            return new ResponseVo<>(id);
+        } catch (Exception e) {
+            return new ResponseVo<>(e);
         }
-
-        OperatorEntity item = operatorRepo.getItem(operatorId);
-        if (item == null) {
-            return new ResponseVo<>(-1L);
-        }
-
-        if (StrUtil.isNill(indicatorIds)) {
-            throw new IllegalParameterException();
-        }
-        List<Long> requestedIndicatorIdList = StrUtil.explode(indicatorIds);
-        List<Long> existedIndicatorIdList = indicatorRepo.getIdList(requestedIndicatorIdList);
-        if (!ListUtil.isEqual(requestedIndicatorIdList, existedIndicatorIdList)) {
-            throw new IllegalParameterException();
-        }
-
-        Long id = indicatorRepo.create(name, operatorId, existedIndicatorIdList);
-        return new ResponseVo<>(id);
     }
 }

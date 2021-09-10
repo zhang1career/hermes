@@ -1,5 +1,7 @@
 package lab.zhang.hermes.repo;
 
+import lab.zhang.apollo.pojo.ApolloType;
+import lab.zhang.apollo.pojo.Token;
 import lab.zhang.hermes.dao.IndicatorDao;
 import lab.zhang.hermes.dao.IndicatorIndicatorRelationDao;
 import lab.zhang.hermes.entity.BaseEntity;
@@ -7,6 +9,7 @@ import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,15 +39,6 @@ public class IndicatorRepo extends BaseRepo {
     }
 
 
-    public Map<Long, IndicatorEntity> getListIndexById(List<Long> idList) {
-        List<IndicatorEntity> indicatorEntityList = getList(idList);
-        if (indicatorEntityList == null) {
-            return null;
-        }
-        return indexById(indicatorEntityList);
-    }
-
-
     public List<Long> getIdList(List<Long> idList) {
         List<IndicatorEntity> indicatorEntityList = getList(idList);
         if (indicatorEntityList == null) {
@@ -67,8 +61,8 @@ public class IndicatorRepo extends BaseRepo {
     }
 
 
-    public Long create(String name, long operatorId, List<Long> childrenIdList) {
-        IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, "");
+    public Long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
+        IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
         List<IndicatorEntity> children = getList(childrenIdList);
         indicatorEntity.setChildren(children);
 

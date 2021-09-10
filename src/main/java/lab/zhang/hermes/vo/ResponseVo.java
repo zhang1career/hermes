@@ -1,6 +1,8 @@
 package lab.zhang.hermes.vo;
 
+import lab.zhang.hermes.errmsg.ErrorCode;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author zhangrj
@@ -31,6 +33,12 @@ public class ResponseVo<T> {
     }
 
     public ResponseVo(T data) {
-        this(CODE_OK, "", data);
+        this(CODE_OK, "OK", data);
+    }
+
+    public ResponseVo(@NotNull Exception e) {
+        this.code = ErrorCode.MAP.get(e.getClass().getName());
+        this.msg  = e.getMessage();
+        this.data = null;
     }
 }
