@@ -46,7 +46,7 @@ public class OperatorDaoTest {
 
     @Test
     public void test_insert() {
-        OperatorEntity item = new OperatorEntity("lab.zhang.hermes.pojo.operators.externals.ExternalOperatorFourior");
+        OperatorEntity item = new OperatorEntity("运算符", "lab.zhang.hermes.pojo.operators.externals.ExternalOperatorFourior");
         int count = target.insert(item);
         assertTrue(count > 0);
         System.out.println(count);

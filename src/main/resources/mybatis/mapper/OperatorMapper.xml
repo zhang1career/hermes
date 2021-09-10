@@ -5,11 +5,21 @@
 
     <resultMap id="BaseResultMap" type="lab.zhang.hermes.entity.operator.OperatorEntity" >
         <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="lab.zhang.hermes.entity.operator.OperatorEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="clazz" property="clazz" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="BaseColumnList" >
-        id, clazz
+        id, name
+    </sql>
+
+    <sql id="DetailColumnList" >
+        id, name, clazz
     </sql>
 
     <select id="findAll" resultMap="BaseResultMap"  >
@@ -18,9 +28,22 @@
         FROM operator
     </select>
 
-    <select id="findOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+    <select id="findByCondition" resultMap="BaseResultMap"  >
         SELECT
             <include refid="BaseColumnList" />
+        FROM operator
+        WHERE is_deleted = 0
+        <if test="condition.containsKey('ids')">
+            AND id IN
+            <foreach collection="condition.get('ids')" item="value" open="(" separator="," close=")">
+                <if test="value != null">${value}</if>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="findOne" parameterType="java.lang.Long" resultMap="DetailResultMap" >
+        SELECT
+            <include refid="DetailColumnList" />
         FROM operator
         WHERE id = #{id}
     </select>

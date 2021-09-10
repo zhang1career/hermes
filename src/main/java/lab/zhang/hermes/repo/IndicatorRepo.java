@@ -1,15 +1,11 @@
 package lab.zhang.hermes.repo;
 
-import lab.zhang.apollo.pojo.ApolloType;
-import lab.zhang.apollo.pojo.Token;
 import lab.zhang.hermes.dao.IndicatorDao;
 import lab.zhang.hermes.dao.IndicatorIndicatorRelationDao;
-import lab.zhang.hermes.entity.BaseEntity;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +28,7 @@ public class IndicatorRepo extends BaseRepo {
     }
 
 
-    private List<IndicatorEntity> getList(List<Long> idList) {
+    public List<IndicatorEntity> getList(List<Long> idList) {
         Map<String, Object> condition = new HashMap<>(0);
         condition.put("ids", idList);
         return indicatorDao.findByCondition(condition);
@@ -44,7 +40,7 @@ public class IndicatorRepo extends BaseRepo {
         if (indicatorEntityList == null) {
             return null;
         }
-        return columnOf(indicatorEntityList, BaseEntity::getId);
+        return columnOf(indicatorEntityList, IndicatorEntity::getId);
     }
 
 

@@ -12,15 +12,22 @@ import org.apache.commons.text.StringEscapeUtils;
 @Data
 public class OperatorEntity extends BaseEntity {
 
+    private String name;
+
     private String clazz;
 
-    public OperatorEntity(Long id, String clazz) {
+    public OperatorEntity(Long id, String name, String clazz) {
         this.id = id;
+        this.name = name;
         this.clazz = clazz;
     }
 
-    public OperatorEntity(String clazz) {
-        this(null, clazz);
+    public OperatorEntity(Long id, String name) {
+        this(id, name, "");
+    }
+
+    public OperatorEntity(String name, String clazz) {
+        this(null, name, clazz);
     }
 
     @Override

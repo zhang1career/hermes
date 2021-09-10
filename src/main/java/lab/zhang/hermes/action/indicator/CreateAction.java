@@ -1,6 +1,7 @@
 package lab.zhang.hermes.action.indicator;
 
 import lab.zhang.hermes.action.BaseAction;
+import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lab.zhang.hermes.entity.operator.OperatorEntity;
 import lab.zhang.hermes.exception.InvalidParameterException;
 import lab.zhang.hermes.repo.IndicatorRepo;
@@ -47,6 +48,8 @@ public class CreateAction extends BaseAction {
             throw new InvalidParameterException("the indicator_ids have some wrong value");
         }
 
-        return indicatorService.createIndicator(name, operatorId, existedIndicatorIdList);
+        List<IndicatorEntity> indicatorEntityList = indicatorRepo.getList(requestedIndicatorIdList);
+
+        return indicatorService.createIndicator(name, operatorId, indicatorEntityList);
     }
 }
