@@ -82,11 +82,7 @@ public class IndicatorRepo extends BaseRepo {
             }
             indicatorEntityId = indicatorEntity.getId();
             // indicator_indicator table
-            List<Long> existedChildrenIdList = BaseRepo.columnOf(indicatorIndicatorRelationDao.findChildren(indicatorEntityId), IndicatorEntity::getId);
-            List<Long> insertingChildrenIdList = ListUtil.diff(childrenIdList, existedChildrenIdList);
-            if (insertingChildrenIdList.size() > 0) {
-                indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, insertingChildrenIdList);
-            }
+            indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, childrenIdList);
         } catch (Exception e) {
             transactionManager.rollback(txStatus);
             throw e;
@@ -95,4 +91,39 @@ public class IndicatorRepo extends BaseRepo {
 
         return indicatorEntityId;
     }
+
+//    public long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
+//        long indicatorEntityId = 0;
+//
+//        // prepare
+//        IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
+//        List<IndicatorEntity> indicatorEntityList = getList(childrenIdList);
+//        indicatorEntity.setChildren(indicatorEntityList);
+//
+//        // transaction
+//        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+//        try {
+//            // indicator table
+//            if (indicatorDao.insert(indicatorEntity) < 1) {
+//                throw new SqlException("indicator insert failed");
+//            }
+//            indicatorEntityId = indicatorEntity.getId();
+//            // indicator_indicator table
+//            List<Long> insertingChildrenIdList = null;
+//            List<IndicatorEntity> existedChildrenEntityList = indicatorIndicatorRelationDao.findChildren(indicatorEntityId);
+//            if (!ListUtil.isEmpty(existedChildrenEntityList)) {
+//                List<Long> existedChildrenIdList = BaseRepo.columnOf(existedChildrenEntityList, IndicatorEntity::getId);
+//                insertingChildrenIdList = ListUtil.diff(childrenIdList, existedChildrenIdList);
+//            }
+//            if (insertingChildrenIdList != null && insertingChildrenIdList.size() > 0) {
+//                indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, insertingChildrenIdList);
+//            }
+//        } catch (Exception e) {
+//            transactionManager.rollback(txStatus);
+//            throw e;
+//        }
+//        transactionManager.commit(txStatus);
+//
+//        return indicatorEntityId;
+//    }
 }

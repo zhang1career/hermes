@@ -14,8 +14,12 @@ import java.util.Map;
 public class BaseRepo {
 
     @NotNull
-    static public <P, R> List<R> columnOf(@NotNull List<P> inputList, Convertible<P, R> convertor) {
-        List<R> output = new ArrayList<>(inputList.size());
+    static public <P, R> List<R> columnOf(List<P> inputList, Convertible<P, R> convertor) {
+        List<R> output = new ArrayList<>();
+        if (inputList == null || inputList.isEmpty()) {
+            return output;
+        }
+
         for (P input : inputList) {
             output.add(convertor.covertFrom(input));
         }
