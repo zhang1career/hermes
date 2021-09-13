@@ -1,10 +1,15 @@
 package lab.zhang.hermes.repo;
 
+import lab.zhang.apollo.pojo.ApolloType;
+import lab.zhang.apollo.pojo.Token;
+import lab.zhang.apollo.service.LexerService;
+import lab.zhang.apollo.service.lexer.BasicLexerService;
+import lab.zhang.hermes.dao.OriginalExpressionDao;
 import lab.zhang.hermes.dao.IndicatorDao;
-import lab.zhang.hermes.dao.IndicatorIndicatorRelationDao;
+import lab.zhang.hermes.entity.expression.OriginalExpressionEntity;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lab.zhang.hermes.exception.SqlException;
-import lab.zhang.hermes.util.ListUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -25,10 +30,12 @@ public class IndicatorRepo extends BaseRepo {
     private IndicatorDao indicatorDao;
 
     @Autowired
-    private IndicatorIndicatorRelationDao indicatorIndicatorRelationDao;
+    private OriginalExpressionDao originalExpressionDao;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
+
+    private final LexerService lexerService = new BasicLexerService();
 
 
     public List<IndicatorEntity> getList() {
@@ -53,77 +60,35 @@ public class IndicatorRepo extends BaseRepo {
 
 
     public IndicatorEntity getItem(long id) {
-        IndicatorEntity indicatorEntity = indicatorDao.findOne(id);
-        if (indicatorEntity == null) {
-            return null;
-        }
-
-        List<IndicatorEntity> children = indicatorIndicatorRelationDao.findChildren(id);
-        indicatorEntity.setChildren(children);
-
-        return indicatorEntity;
+        return indicatorDao.findOne(id);
     }
 
 
-    public long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
-        long indicatorEntityId = 0;
-
-        // prepare
-        IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
-        List<IndicatorEntity> indicatorEntityList = getList(childrenIdList);
-        indicatorEntity.setChildren(indicatorEntityList);
+    public IndicatorEntity create(String name, long operatorId, String operands) {
+        IndicatorEntity indicatorEntity;
 
         // transaction
         TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
         try {
-            // indicator table
+            // indicator
+            indicatorEntity = new IndicatorEntity(name, operatorId, operands);
             if (indicatorDao.insert(indicatorEntity) < 1) {
-                throw new SqlException("indicator insert failed");
+                throw new SqlException("origin indicator insert failed");
             }
-            indicatorEntityId = indicatorEntity.getId();
-            // indicator_indicator table
-            indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, childrenIdList);
+            long indicatorEntityId = indicatorEntity.getId();
+            // expression
+            List<Token> operandTokenList = lexerService.tokenListOf(operands);
+            Token token = new Token(name, ApolloType.ORIGINAL_OPERATION, indicatorEntityId, operandTokenList);
+            OriginalExpressionEntity originalExpressionEntity = new OriginalExpressionEntity(indicatorEntityId, lexerService.jsonOf(token));
+            if (originalExpressionDao.insert(originalExpressionEntity) < 1) {
+                throw new SqlException("origin expression insert failed");
+            }
         } catch (Exception e) {
             transactionManager.rollback(txStatus);
             throw e;
         }
         transactionManager.commit(txStatus);
 
-        return indicatorEntityId;
+        return indicatorEntity;
     }
-
-//    public long create(String name, long operatorId, String expression, List<Long> childrenIdList) {
-//        long indicatorEntityId = 0;
-//
-//        // prepare
-//        IndicatorEntity indicatorEntity = new IndicatorEntity(name, operatorId, expression);
-//        List<IndicatorEntity> indicatorEntityList = getList(childrenIdList);
-//        indicatorEntity.setChildren(indicatorEntityList);
-//
-//        // transaction
-//        TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
-//        try {
-//            // indicator table
-//            if (indicatorDao.insert(indicatorEntity) < 1) {
-//                throw new SqlException("indicator insert failed");
-//            }
-//            indicatorEntityId = indicatorEntity.getId();
-//            // indicator_indicator table
-//            List<Long> insertingChildrenIdList = null;
-//            List<IndicatorEntity> existedChildrenEntityList = indicatorIndicatorRelationDao.findChildren(indicatorEntityId);
-//            if (!ListUtil.isEmpty(existedChildrenEntityList)) {
-//                List<Long> existedChildrenIdList = BaseRepo.columnOf(existedChildrenEntityList, IndicatorEntity::getId);
-//                insertingChildrenIdList = ListUtil.diff(childrenIdList, existedChildrenIdList);
-//            }
-//            if (insertingChildrenIdList != null && insertingChildrenIdList.size() > 0) {
-//                indicatorIndicatorRelationDao.insertChildren(indicatorEntityId, insertingChildrenIdList);
-//            }
-//        } catch (Exception e) {
-//            transactionManager.rollback(txStatus);
-//            throw e;
-//        }
-//        transactionManager.commit(txStatus);
-//
-//        return indicatorEntityId;
-//    }
 }

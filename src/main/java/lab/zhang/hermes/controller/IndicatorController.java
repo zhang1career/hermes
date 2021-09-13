@@ -42,10 +42,10 @@ public class IndicatorController {
     @PostMapping("/api/indicators")
     ResponseVo<Long> create(@RequestParam("name") String name,
                             @RequestParam("operator_id") long operatorId,
-                            @RequestParam("indicator_ids") String indicatorIds
+                            @RequestParam("operands") String operands
     ) {
         try {
-            Long id = indicatorCreateAction.act(name, operatorId, indicatorIds);
+            long id = indicatorCreateAction.act(name, operatorId, operands);
             return new ResponseVo<>(id);
         } catch (Exception e) {
             return new ResponseVo<>(e);

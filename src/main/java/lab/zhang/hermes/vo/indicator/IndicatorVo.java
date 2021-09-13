@@ -1,11 +1,7 @@
 package lab.zhang.hermes.vo.indicator;
 
-import com.alibaba.fastjson.JSON;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author zhangrj
@@ -17,8 +13,8 @@ public class IndicatorVo {
 
     private Long id;
     private String name;
-    private List<IndicatorVoLite> children;
-    private String expression;
+    private String operator;
+    private String operands;
 
     static public IndicatorVo of(IndicatorEntity indicatorEntity) {
         if (indicatorEntity == null) {
@@ -28,14 +24,8 @@ public class IndicatorVo {
         IndicatorVo indicatorVo = new IndicatorVo();
         indicatorVo.setId(indicatorEntity.getId());
         indicatorVo.setName(indicatorEntity.getName());
-        indicatorVo.setExpression(indicatorEntity.getExpression());
-
-        List<IndicatorVoLite> indicatorVoLiteList = new ArrayList<>();
-        List<IndicatorEntity> indicatorEntityList = indicatorEntity.getChildren();
-        for (IndicatorEntity entity : indicatorEntityList) {
-            indicatorVoLiteList.add(IndicatorVoLite.of(entity));
-        }
-        indicatorVo.setChildren(indicatorVoLiteList);
+        indicatorVo.setOperator(String.valueOf(indicatorEntity.getOperatorId()));
+        indicatorVo.setOperands(indicatorEntity.getOperands());
 
         return indicatorVo;
     }

@@ -1,7 +1,5 @@
 package lab.zhang.hermes.util;
 
-import lab.zhang.hermes.entity.indicator.IndicatorEntity;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

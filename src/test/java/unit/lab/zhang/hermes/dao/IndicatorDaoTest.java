@@ -58,14 +58,14 @@ public class IndicatorDaoTest {
         IndicatorEntity item1 = target.findOne(3);
         assertNotNull(item1);
         item1.setName("测试式3改");
-        item1.setExpression("{\"name\":\"指标3\",\"type\":1,\"id\":0,\"value\":3}");
+        item1.setOperands("{\"name\":\"指标3\",\"type\":1,\"id\":0,\"value\":3}");
         target.update(item1);
         System.out.println(item1);
 
         IndicatorEntity item2 = target.findOne(3);
         assertNotNull(item2);
         assertEquals("测试式3改", item2.getName());
-        assertEquals("{\"name\":\"指标3\",\"type\":1,\"id\":0,\"value\":3}", item2.getExpression());
+        assertEquals("{\"name\":\"指标3\",\"type\":1,\"id\":0,\"value\":3}", item2.getOperands());
     }
 
     @Test

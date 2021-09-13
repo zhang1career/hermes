@@ -1,7 +1,7 @@
 package unit.lab.zhang.hermes.service;
 
 import lab.zhang.hermes.Application;
-import lab.zhang.hermes.service.IndicatorPlanService;
+import lab.zhang.hermes.service.IndicatorService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 @SpringBootTest(classes = Application.class)
 public class IndicatorPlanServiceTest {
     @Autowired
-    private IndicatorPlanService target;
+    private IndicatorService target;
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -29,7 +29,7 @@ public class IndicatorPlanServiceTest {
 
     @Test
     public void test_plan() {
-        Long plannedId = target.plan(1L);
+        Long plannedId = target.createPlannedIndicator(1L).getId();
         assertNotNull(plannedId);
         System.out.println("id=" + plannedId);
     }

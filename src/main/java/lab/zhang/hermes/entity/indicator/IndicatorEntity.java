@@ -6,8 +6,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.List;
-
 /**
  * @author zhangrj
  */
@@ -18,32 +16,21 @@ public class IndicatorEntity extends BaseEntity {
 
     private long operatorId;
 
-    private String expression;
-    /**
-     * many to many relationship
-     */
-    private List<IndicatorEntity> parents;
-    /**
-     * many to many relationship
-     */
-    private List<IndicatorEntity> children;
+    private String operands;
 
 
     public IndicatorEntity() {
     }
 
-    public IndicatorEntity(long id, String name, long operatorId, String expression) {
+    public IndicatorEntity(long id, String name, long operatorId, String operands) {
         this.id = id;
         this.name = name;
         this.operatorId = operatorId;
-        this.expression = expression;
-
-        this.parents = null;
-        this.children = null;
+        this.operands = operands;
     }
 
-    public IndicatorEntity(String name, long operatorId, String expression) {
-        this(0, name, operatorId, expression);
+    public IndicatorEntity(String name, long operatorId, String operands) {
+        this(0, name, operatorId, operands);
     }
 
     @Override
@@ -51,7 +38,8 @@ public class IndicatorEntity extends BaseEntity {
         String jsonStr = new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
                 .append("id", id)
                 .append("name", name)
-                .append("expression", expression)
+                .append("operatorId", operatorId)
+                .append("operands", operands)
                 .toString();
         return StringEscapeUtils.unescapeJava(jsonStr);
     }
@@ -65,11 +53,11 @@ public class IndicatorEntity extends BaseEntity {
         this.name = name;
     }
 
-    public String getExpression() {
-        return this.expression;
+    public String getOperands() {
+        return this.operands;
     }
 
-    public void setExpression(String expression) {
-        this.expression = expression;
+    public void setOperands(String operands) {
+        this.operands = operands;
     }
 }

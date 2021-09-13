@@ -9,10 +9,11 @@ import java.util.List;
 /**
  * @author zhangrj
  */
-public class TypeInfoOperator extends ExternalOperator {
+public class ParamOrConfigOperator extends ExternalOperator {
+
     @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
         System.out.println("This is a user defined indicator");
-        return null;
+        return System.currentTimeMillis();
     }
 }

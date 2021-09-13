@@ -1,4 +1,4 @@
-package lab.zhang.hermes.entity.indicator;
+package lab.zhang.hermes.entity.expression;
 
 import lab.zhang.hermes.entity.BaseEntity;
 import lombok.Data;
@@ -10,23 +10,23 @@ import org.apache.commons.text.StringEscapeUtils;
  * @author zhangrj
  */
 @Data
-public class PlannedIndicatorEntity extends BaseEntity {
+public class PlannedExpressionEntity extends BaseEntity {
 
     private Long indicatorId;
 
     private String expression;
 
-    public PlannedIndicatorEntity(long id, Long indicatorId, String expression) {
+    public PlannedExpressionEntity(long id, Long indicatorId, String expression) {
         this.id = id;
         this.indicatorId = indicatorId;
         this.expression = expression;
     }
 
-    public PlannedIndicatorEntity(long indicatorId, String expression) {
+    public PlannedExpressionEntity(long indicatorId, String expression) {
         this(0, indicatorId, expression);
     }
 
-    public PlannedIndicatorEntity(String expression) {
+    public PlannedExpressionEntity(String expression) {
         this(0, null, expression);
     }
 

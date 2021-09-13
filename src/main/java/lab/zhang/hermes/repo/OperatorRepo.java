@@ -1,7 +1,6 @@
 package lab.zhang.hermes.repo;
 
 import lab.zhang.hermes.dao.OperatorDao;
-import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lab.zhang.hermes.entity.operator.OperatorEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

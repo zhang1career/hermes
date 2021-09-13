@@ -1,20 +1,16 @@
 package lab.zhang.hermes.service;
 
-import lab.zhang.apollo.pojo.ApolloType;
 import lab.zhang.apollo.pojo.Token;
 import lab.zhang.apollo.service.LexerService;
+import lab.zhang.apollo.service.PlanService;
 import lab.zhang.apollo.service.lexer.BasicLexerService;
+import lab.zhang.hermes.entity.expression.PlannedExpressionEntity;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
-import lab.zhang.hermes.entity.operator.OperatorEntity;
-import lab.zhang.hermes.repo.BaseRepo;
 import lab.zhang.hermes.repo.IndicatorRepo;
-import lab.zhang.hermes.repo.OperatorRepo;
-import org.jetbrains.annotations.NotNull;
+import lab.zhang.hermes.repo.OriginalExpressionRepo;
+import lab.zhang.hermes.repo.PlannedExpressionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -23,33 +19,55 @@ import java.util.Map;
 @Service
 public class IndicatorService {
 
+    static protected LexerService lexerService = new BasicLexerService();
+
+    static protected PlanService planService = new PlanService(new PlannedExpressionRepo());
+
     @Autowired
     private IndicatorRepo indicatorRepo;
 
     @Autowired
-    private OperatorRepo operatorRepo;
+    private OriginalExpressionRepo originalExpressionRepo;
 
-    private final LexerService lexerService = new BasicLexerService();
+    @Autowired
+    private PlannedExpressionRepo plannedExpressionRepo;
 
 
-    public Long createIndicator(String name, long operatorId, List<IndicatorEntity> indicatorEntityList) {
-        OperatorEntity operatorEntity = operatorRepo.getItem(operatorId);
-        List<Long> indicatorIdList = BaseRepo.columnOf(indicatorEntityList, IndicatorEntity::getId);
-        String expression = expressionOf(operatorEntity, indicatorEntityList);
-        return indicatorRepo.create(name, operatorId, expression, indicatorIdList);
+    /**
+     * @param name
+     * @param operatorId
+     * @param operands
+     * @return IndicatorEntity
+     */
+    public IndicatorEntity createOriginalIndicator(String name, long operatorId, String operands) {
+        return indicatorRepo.create(name, operatorId, operands);
     }
 
-    private String expressionOf(OperatorEntity operatorEntity, @NotNull List<IndicatorEntity> indicatorEntityList) {
-        Token[] childrenToken = new Token[indicatorEntityList.size()];
-        for (int i = 0; i < indicatorEntityList.size(); i++) {
-            IndicatorEntity indicatorEntity = indicatorEntityList.get(i);
-            childrenToken[i] = new Token(
-                    indicatorEntity.getName(),
-                    ApolloType.FRESH_OPERATION,
-                    indicatorEntity.getId(),
-                    null);
+    public PlannedExpressionEntity createPlannedIndicator(IndicatorEntity indicatorEntity) {
+        String originalExpression = originalExpressionRepo.getExpression(indicatorEntity.getId());
+        if (originalExpression == null) {
+            return null;
         }
-        Token token = new Token(operatorEntity.getName(), ApolloType.EXTERNAL_OPERATOR, operatorEntity.getId(), childrenToken);
-        return lexerService.jsonOf(token);
+
+        Token originalToken = lexerService.tokenOf(originalExpression);
+        if (originalToken == null) {
+            return null;
+        }
+
+        Token plannedToken = planService.plan(originalToken);
+        if (plannedToken == null) {
+            return null;
+        }
+
+        return plannedExpressionRepo.create(indicatorEntity.getId(), plannedToken);
+    }
+
+    public PlannedExpressionEntity createPlannedIndicator(long id) {
+        IndicatorEntity indicatorEntity = indicatorRepo.getItem(id);
+        if (indicatorEntity == null) {
+            return null;
+        }
+
+        return createPlannedIndicator(indicatorEntity);
     }
 }
