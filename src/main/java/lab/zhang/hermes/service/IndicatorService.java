@@ -19,10 +19,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class IndicatorService {
 
-    static protected LexerService lexerService = new BasicLexerService();
-
-    static protected PlanService planService = new PlanService(new PlannedExpressionRepo());
-
     @Autowired
     private IndicatorRepo indicatorRepo;
 
@@ -31,6 +27,10 @@ public class IndicatorService {
 
     @Autowired
     private PlannedExpressionRepo plannedExpressionRepo;
+
+    private final LexerService lexerService = new BasicLexerService();
+
+    private final PlanService planService = new PlanService(new PlannedExpressionRepo());
 
 
     /**

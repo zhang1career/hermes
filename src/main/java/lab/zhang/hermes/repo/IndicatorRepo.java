@@ -4,12 +4,13 @@ import lab.zhang.apollo.pojo.ApolloType;
 import lab.zhang.apollo.pojo.Token;
 import lab.zhang.apollo.service.LexerService;
 import lab.zhang.apollo.service.lexer.BasicLexerService;
-import lab.zhang.hermes.dao.OriginalExpressionDao;
 import lab.zhang.hermes.dao.IndicatorDao;
+import lab.zhang.hermes.dao.OperatorDao;
+import lab.zhang.hermes.dao.OriginalExpressionDao;
 import lab.zhang.hermes.entity.expression.OriginalExpressionEntity;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
+import lab.zhang.hermes.entity.operator.OperatorEntity;
 import lab.zhang.hermes.exception.SqlException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -28,6 +29,9 @@ public class IndicatorRepo extends BaseRepo {
 
     @Autowired
     private IndicatorDao indicatorDao;
+
+    @Autowired
+    private OperatorDao operatorDao;
 
     @Autowired
     private OriginalExpressionDao originalExpressionDao;
@@ -78,7 +82,7 @@ public class IndicatorRepo extends BaseRepo {
             long indicatorEntityId = indicatorEntity.getId();
             // expression
             List<Token> operandTokenList = lexerService.tokenListOf(operands);
-            Token token = new Token(name, ApolloType.ORIGINAL_OPERATION, indicatorEntityId, operandTokenList);
+            Token token = new Token(name, ApolloType.EXTERNAL_OPERATOR, indicatorEntityId, operandTokenList);
             OriginalExpressionEntity originalExpressionEntity = new OriginalExpressionEntity(indicatorEntityId, lexerService.jsonOf(token));
             if (originalExpressionDao.insert(originalExpressionEntity) < 1) {
                 throw new SqlException("origin expression insert failed");

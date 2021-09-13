@@ -13,7 +13,6 @@ public class ParamOrConfigOperator extends ExternalOperator {
 
     @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
-        System.out.println("This is a user defined indicator");
-        return System.currentTimeMillis();
+        return list.get(0).getValue(paramContext);
     }
 }

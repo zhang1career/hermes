@@ -12,22 +12,25 @@ import org.apache.commons.text.StringEscapeUtils;
 @Data
 public class PlannedExpressionEntity extends BaseEntity {
 
-    private Long indicatorId;
+    private long indicatorId;
 
     private String expression;
 
-    public PlannedExpressionEntity(long id, Long indicatorId, String expression) {
+    private Integer isDeleted;
+
+    public PlannedExpressionEntity(long id, long indicatorId, String expression, int isDeleted) {
         this.id = id;
         this.indicatorId = indicatorId;
         this.expression = expression;
+        this.isDeleted = isDeleted;
     }
 
     public PlannedExpressionEntity(long indicatorId, String expression) {
-        this(0, indicatorId, expression);
+        this(0, indicatorId, expression, 0);
     }
 
     public PlannedExpressionEntity(String expression) {
-        this(0, null, expression);
+        this(0, 0, expression, 0);
     }
 
     @Override
