@@ -15,7 +15,7 @@ public class CalcAction {
     @Autowired
     private CalculatorService calculatorService;
 
-    public Object act(int eventId, Map<String, Object> params) {
-        return calculatorService.calc(eventId, params);
+    public Object act(long indicatorId, Map<String, Object> params) {
+        return calculatorService.calc(indicatorId, params);
     }
 }

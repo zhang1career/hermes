@@ -82,7 +82,7 @@ public class IndicatorRepo extends BaseRepo {
             long indicatorEntityId = indicatorEntity.getId();
             // expression
             List<Token> operandTokenList = lexerService.tokenListOf(operands);
-            Token token = new Token(name, ApolloType.EXTERNAL_OPERATOR, indicatorEntityId, operandTokenList);
+            Token token = new Token(name, ApolloType.EXTERNAL_OPERATOR, operatorId, operandTokenList);
             OriginalExpressionEntity originalExpressionEntity = new OriginalExpressionEntity(indicatorEntityId, lexerService.jsonOf(token));
             if (originalExpressionDao.insert(originalExpressionEntity) < 1) {
                 throw new SqlException("origin expression insert failed");

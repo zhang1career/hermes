@@ -28,10 +28,6 @@ public class IndicatorService {
     @Autowired
     private PlannedExpressionRepo plannedExpressionRepo;
 
-    private final LexerService lexerService = new BasicLexerService();
-
-    private final PlanService planService = new PlanService(new PlannedExpressionRepo());
-
 
     /**
      * @param name
@@ -49,11 +45,13 @@ public class IndicatorService {
             return null;
         }
 
+        LexerService lexerService = new BasicLexerService();
         Token originalToken = lexerService.tokenOf(originalExpression);
         if (originalToken == null) {
             return null;
         }
 
+        PlanService planService = new PlanService(plannedExpressionRepo);
         Token plannedToken = planService.plan(originalToken);
         if (plannedToken == null) {
             return null;

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author zhangrj
  */
-public class ParamOrConfigOperator extends ExternalOperator {
+public class SensitiveWordOperator extends ExternalOperator {
 
     @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
@@ -23,6 +23,7 @@ public class ParamOrConfigOperator extends ExternalOperator {
             throw new ServiceException("Valuable param needed, class=" + this.getClass().getSimpleName());
         }
 
-        return valuable.getValue(paramContext);
+        String dut = (String) valuable.getValue(paramContext);
+        return "敏感词".equals(dut);
     }
 }
