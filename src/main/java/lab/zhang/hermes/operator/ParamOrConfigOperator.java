@@ -11,16 +11,19 @@ import java.util.List;
  * @author zhangrj
  */
 public class ParamOrConfigOperator extends ExternalOperator {
+    static private final int PARAM_SIZE = 1;
 
     @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
-        if (list == null || list.size() != 1) {
-            throw new ServiceException("Exactly one param needed, class=" + this.getClass().getSimpleName());
+        // check
+        if (list == null || list.size() < PARAM_SIZE) {
+            throw new ServiceException("Exactly one param needed, class: " + this.getClass().getSimpleName());
         }
 
+        // get parameters
         Valuable<Object> valuable = list.get(0);
         if (valuable == null) {
-            throw new ServiceException("Valuable param needed, class=" + this.getClass().getSimpleName());
+            throw new ServiceException("Valuable param needed, class: " + this.getClass().getSimpleName());
         }
 
         return valuable.getValue(paramContext);
