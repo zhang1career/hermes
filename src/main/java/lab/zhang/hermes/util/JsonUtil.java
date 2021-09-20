@@ -35,9 +35,6 @@ public class JsonUtil {
 
             if (value instanceof JSONArray) {
                 JSONArray subJsonArray = (JSONArray) value;
-                if (subJsonArray.isEmpty()) {
-                    return;
-                }
                 Object[] subArray = new Object[subJsonArray.size()];
                 for (int i = 0; i < subJsonArray.size(); i++) {
                     subArray[i] = analyze(subJsonArray.get(i));

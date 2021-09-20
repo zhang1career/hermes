@@ -6,6 +6,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.util.List;
+
 /**
  * @author zhangrj
  */
@@ -17,6 +19,12 @@ public class IndicatorEntity extends BaseEntity {
     private long operatorId;
 
     private String operands;
+
+    private String nestedChildrenIds;
+
+    private List<IndicatorEntity> parents;
+
+    private List<IndicatorEntity> children;
 
 
     public IndicatorEntity() {

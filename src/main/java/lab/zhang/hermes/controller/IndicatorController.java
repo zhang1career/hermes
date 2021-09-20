@@ -1,6 +1,7 @@
 package lab.zhang.hermes.controller;
 
 import lab.zhang.hermes.action.indicator.CreateAction;
+import lab.zhang.hermes.action.indicator.UpdateAction;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
 import lab.zhang.hermes.repo.IndicatorRepo;
 import lab.zhang.hermes.vo.ResponseVo;
@@ -24,6 +25,9 @@ public class IndicatorController {
     @Autowired
     private CreateAction indicatorCreateAction;
 
+    @Autowired
+    private UpdateAction indicatorUpdateAction;
+
     @GetMapping("/api/indicators")
     List<IndicatorVoLite> getList() {
         List<IndicatorEntity> indicatorEntityList = indicatorRepo.getList();
@@ -31,7 +35,7 @@ public class IndicatorController {
     }
 
     @GetMapping("/api/indicators/{id}")
-    ResponseVo<IndicatorVo> getItem(@PathVariable Long id) {
+    ResponseVo<IndicatorVo> getItem(@PathVariable long id) {
         IndicatorEntity indicatorEntity = indicatorRepo.getItem(id);
         if (indicatorEntity == null) {
             return new ResponseVo<>(null);
@@ -45,8 +49,22 @@ public class IndicatorController {
                             @RequestParam("operands") String operands
     ) {
         try {
-            long id = indicatorCreateAction.act(name, operatorId, operands);
-            return new ResponseVo<>(id);
+            long createdId = indicatorCreateAction.act(name, operatorId, operands);
+            return new ResponseVo<>(createdId);
+        } catch (Exception e) {
+            return new ResponseVo<>(e);
+        }
+    }
+
+    @PostMapping("/api/indicators/{id}")
+    ResponseVo<Long> update(@PathVariable long id,
+                            @RequestParam("name") String name,
+                            @RequestParam("operator_id") long operatorId,
+                            @RequestParam("operands") String operands
+    ) {
+        try {
+            long updatedId = indicatorUpdateAction.act(id, name, operatorId, operands);
+            return new ResponseVo<>(updatedId);
         } catch (Exception e) {
             return new ResponseVo<>(e);
         }

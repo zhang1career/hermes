@@ -14,6 +14,7 @@
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
         <result column="operands" property="operands" jdbcType="LONGVARCHAR" />
+        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="LONGVARCHAR" />
     </resultMap>
 
     <sql id="BaseColumnList" >
@@ -21,7 +22,7 @@
     </sql>
 
     <sql id="DetailColumnList" >
-        id, name, operator_id, operands, is_deleted
+        id, name, operator_id, operands, nested_children_ids, is_deleted
     </sql>
 
     <select id="findAll" resultMap="BaseResultMap"  >
@@ -50,12 +51,20 @@
         WHERE id = #{id}
     </select>
 
+    <select id="selectOneForUpdate" parameterType="java.lang.Long" resultMap="DetailResultMap" >
+        SELECT
+            <include refid="DetailColumnList" />
+        FROM indicator
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
     <insert id="insert" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id" >
         INSERT INTO indicator
-            (name,operator_id,operands)
+            (name, operator_id, operands, nested_children_ids)
         VALUES
-            (#{name}, #{operatorId}, #{operands})
+            (#{name}, #{operatorId}, #{operands}, #{nestedChildrenIds})
     </insert>
 
     <update id="update" parameterType="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
@@ -63,6 +72,7 @@
         <trim prefix="SET" suffixOverrides=",">
             <if test="name != null">name = #{name},</if>
             <if test="operands != null">operands = #{operands},</if>
+            <if test="nestedChildrenIds != null">nested_children_ids = #{nestedChildrenIds},</if>
         </trim>
         WHERE id = #{id}
     </update>

@@ -37,4 +37,13 @@
         VALUES
             (#{indicatorId}, #{expression})
     </insert>
+
+    <update id="update" parameterType="lab.zhang.hermes.entity.expression.OriginalExpressionEntity" >
+        UPDATE original_expression
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="indicatorId != null">indicator_id = #{indicatorId},</if>
+            <if test="expression != null">expression = #{expression},</if>
+        </trim>
+        WHERE id = #{id}
+    </update>
 </mapper>

@@ -33,9 +33,10 @@ public class SqlService {
         config.setJdbcUrl("jdbc:mysql://" + sqlConfig.getHost() + ":" + sqlConfig.getPort() + "/" + sqlConfig.getDb());
         config.setUsername(sqlConfig.getUser());
         config.setPassword(sqlConfig.getPass());
-        config.addDataSourceProperty("connectionTimeout", "1000");
-        config.addDataSourceProperty("idleTimeout", "60000");
-        config.addDataSourceProperty("maximumPoolSize", "10");
+        config.setConnectionTimeout(1000);
+        config.setIdleTimeout(60000);
+        config.setMaximumPoolSize(10);
+        config.setAutoCommit(false);
         config.addDataSourceProperty("useSSL", false);
 
         DataSource ds = new HikariDataSource(config);

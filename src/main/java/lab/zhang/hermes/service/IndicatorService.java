@@ -39,6 +39,10 @@ public class IndicatorService {
         return indicatorRepo.create(name, operatorId, operands);
     }
 
+    public IndicatorEntity updateOriginalIndicator(long id, String name, long operatorId, String operands) {
+        return indicatorRepo.update(id, name, operatorId, operands);
+    }
+
     public PlannedExpressionEntity createPlannedIndicator(IndicatorEntity indicatorEntity) {
         String originalExpression = originalExpressionRepo.getExpression(indicatorEntity.getId());
         if (originalExpression == null) {

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="lab.zhang.hermes.dao.IndicatorIndicatorDao">
+
+    <resultMap id="ParentResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+<!--        <collection javaType="ArrayList" property="children" resultMap="ChildResultMap" />-->
+    </resultMap>
+
+    <resultMap id="ChildResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+<!--        <collection javaType="ArrayList" property="parents" resultMap="ParentResultMap" />-->
+    </resultMap>
+
+
+    <select id="selectParents" resultMap="ChildResultMap">
+        SELECT
+            p.id AS id, p.name AS name
+        FROM indicator AS c
+        LEFT JOIN indicator_indicator AS r ON c.id = r.child_id
+        LEFT JOIN indicator AS p ON r.parent_id = p.id
+        WHERE c.id = #{id, jdbcType=BIGINT}
+    </select>
+
+    <select id="selectParentsForUpdate" resultMap="ChildResultMap">
+        SELECT
+            p.id AS id, p.name AS name
+        FROM indicator AS c
+        LEFT JOIN indicator_indicator AS r ON c.id = r.child_id
+        LEFT JOIN indicator AS p ON r.parent_id = p.id
+        WHERE c.id = #{id, jdbcType=BIGINT}
+        FOR UPDATE
+    </select>
+
+    <select id="selectChildren" resultMap="ParentResultMap">
+        SELECT
+            c.id AS id, c.name AS name
+        FROM indicator AS p
+        LEFT JOIN indicator_indicator AS r ON p.id = r.parent_id
+        LEFT JOIN indicator AS c ON r.child_id = c.id
+        WHERE p.id = #{id, jdbcType=BIGINT}
+    </select>
+
+    <select id="selectChildrenForUpdate" resultMap="ParentResultMap">
+        SELECT
+            c.id AS id, c.name AS name
+        FROM indicator AS p
+        LEFT JOIN indicator_indicator AS r ON p.id = r.parent_id
+        LEFT JOIN indicator AS c ON r.child_id = c.id
+        WHERE p.id = #{id, jdbcType=BIGINT}
+        FOR UPDATE
+    </select>
+
+    <insert id="insertChild">
+        INSERT INTO indicator_indicator
+            (parent_id, child_id)
+        VALUES
+            (#{id, jdbcType=BIGINT}, #{childId, jdbcType=BIGINT});
+    </insert>
+
+    <insert id="insertChildren">
+        INSERT INTO indicator_indicator
+            (parent_id, child_id)
+        VALUES
+            <foreach collection ="childrenIds" item="childId" separator =",">
+                (#{id}, #{childId})
+            </foreach >
+    </insert>
+
+    <delete id="deleteChild">
+        DELETE FROM indicator_indicator
+        WHERE parent_id = #{id, jdbcType=BIGINT}
+          AND child_id = #{childId, jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteChildren">
+        DELETE FROM indicator_indicator
+        WHERE parent_id = #{id, jdbcType=BIGINT}
+          AND child_id IN
+            <foreach collection="childrenIds" item="childId" open="(" separator="," close=")">
+                #{childId, jdbcType=BIGINT}
+            </foreach>
+    </delete>
+</mapper>

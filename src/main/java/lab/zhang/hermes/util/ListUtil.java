@@ -10,6 +10,15 @@ import java.util.Set;
  */
 public class ListUtil {
 
+    /**
+     * check if the list is [null]
+     * @param list the input data
+     * @return is empty
+     */
+    static public <T> boolean isNill(List<T> list) {
+        return list == null || list.size() == 0 || (list.size() == 1 && list.get(0) == null);
+    }
+
     static public <T> List<T> union(List<T> list1, List<T> list2) {
         Set<T> set = new HashSet<>();
         set.addAll(list1);
@@ -41,14 +50,5 @@ public class ListUtil {
 
     static public <T> boolean isEqual(List<T> list1, List<T> list2) {
         return diff(list1, list2).size() <= 0 && diff(list2, list1).size() <= 0;
-    }
-
-    /**
-     * check if the list is [null]
-     * @param list the input data
-     * @return is empty
-     */
-    static public <T> boolean isEmpty(List<T> list) {
-        return list == null || list.size() == 0 || (list.size() == 1 && list.get(0) == null);
     }
 }

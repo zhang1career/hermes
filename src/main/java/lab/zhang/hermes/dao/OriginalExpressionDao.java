@@ -15,4 +15,6 @@ public interface OriginalExpressionDao {
     OriginalExpressionEntity findByIndicatorId(@Param("indicatorId") long indicatorId);
 
     int insert(OriginalExpressionEntity entity);
+
+    void update(OriginalExpressionEntity entity);
 }
