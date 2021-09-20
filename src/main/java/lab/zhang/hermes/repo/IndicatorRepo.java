@@ -12,6 +12,7 @@ import lab.zhang.hermes.dao.OperatorDao;
 import lab.zhang.hermes.dao.OriginalExpressionDao;
 import lab.zhang.hermes.entity.expression.OriginalExpressionEntity;
 import lab.zhang.hermes.entity.indicator.IndicatorEntity;
+import lab.zhang.hermes.exception.ServiceException;
 import lab.zhang.hermes.exception.SqlException;
 import lab.zhang.hermes.util.ArrayUtil;
 import lab.zhang.hermes.util.ListUtil;
@@ -143,6 +144,9 @@ public class IndicatorRepo extends BaseRepo {
             // children
             List<Token> operandTokenList = lexerService.tokenListOf(operands);
             List<Long> targetChildrenIdList = getChildrenIdList(operandTokenList);
+            if (isNestedChildrenLoop(indicatorEntity, targetChildrenIdList)) {
+                throw new ServiceException("loop detected in the nested children");
+            }
             // nested children
             Long[] addingChildrenIds = null;
             Long[] deletingChildrenIds = null;
@@ -178,6 +182,20 @@ public class IndicatorRepo extends BaseRepo {
         transactionManager.commit(txStatus);
 
         return indicatorEntity;
+    }
+
+    private boolean isNestedChildrenLoop(IndicatorEntity indicatorEntity, List<Long> targetChildrenIdList) {
+        List<IndicatorEntity> targetChildrenIndicatorEntityList = getList(targetChildrenIdList);
+        for (IndicatorEntity targetChildIndicatorEntity : targetChildrenIndicatorEntityList) {
+            Map<Long, Long> nestedChildrenIdMap = getNestedChildrenIdMap(targetChildIndicatorEntity);
+            if (nestedChildrenIdMap == null) {
+                continue;
+            }
+            if (nestedChildrenIdMap.containsKey(indicatorEntity.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
@@ -216,6 +234,7 @@ public class IndicatorRepo extends BaseRepo {
         return indicatorIndicatorDao.selectParents(indicatorEntity.getId());
     }
 
+    @Nullable
     private List<Long> getChildrenIdListForUpdate(@NotNull IndicatorEntity indicatorEntity) {
         List<IndicatorEntity> childrenList = indicatorIndicatorDao.selectChildrenForUpdate(indicatorEntity.getId());
         if (ListUtil.isNill(childrenList)) {
@@ -225,18 +244,20 @@ public class IndicatorRepo extends BaseRepo {
     }
 
     @NotNull
-    private Long[] calcAddingChildrenIds(List<Long> childrenIdList, @NotNull List<Long> targetChildrenIdList) {
-        if (childrenIdList == null || childrenIdList.isEmpty()) {
+    private Long[] calcAddingChildrenIds(List<Long> existedChildrenIdList, @NotNull List<Long> targetChildrenIdList) {
+        if (existedChildrenIdList == null || existedChildrenIdList.isEmpty()) {
             return targetChildrenIdList.toArray(new Long[0]);
         }
-
         return targetChildrenIdList.stream()
-                .filter(e -> !childrenIdList.contains(e)).toArray(Long[]::new);
+                .filter(e -> !existedChildrenIdList.contains(e)).toArray(Long[]::new);
     }
 
     @Nullable
-    private Long[] calcDeletingChildrenIds(@NotNull List<Long> childrenIdList, List<Long> targetChildrenIdList) {
-        return childrenIdList.stream()
+    private Long[] calcDeletingChildrenIds(List<Long> existedChildrenIdList, List<Long> targetChildrenIdList) {
+        if (existedChildrenIdList == null || existedChildrenIdList.isEmpty()) {
+            return null;
+        }
+        return existedChildrenIdList.stream()
                 .filter(e -> !targetChildrenIdList.contains(e)).toArray(Long[]::new);
     }
 
@@ -273,10 +294,11 @@ public class IndicatorRepo extends BaseRepo {
         return nestedChildrenIdsMap;
     }
 
+    @Nullable
     private Map<Long, Long> getNestedChildrenIdMap(@NotNull IndicatorEntity indicatorEntity) {
         String childrenIdsStr = indicatorEntity.getNestedChildrenIds();
         if (StrUtil.isNill(childrenIdsStr)) {
-            childrenIdsStr = "";
+            return null;
         }
 
         return JSON.parseObject(childrenIdsStr, new TypeReference<Map<Long, Long>>() {

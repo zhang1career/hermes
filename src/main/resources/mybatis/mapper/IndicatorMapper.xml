@@ -9,16 +9,27 @@
         <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
     </resultMap>
 
+    <resultMap id="BriefResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="VARCHAR" />
+    </resultMap>
+
     <resultMap id="DetailResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity" >
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
         <result column="operands" property="operands" jdbcType="LONGVARCHAR" />
-        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="LONGVARCHAR" />
+        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="VARCHAR" />
     </resultMap>
 
     <sql id="BaseColumnList" >
         id, name, operator_id, is_deleted
+    </sql>
+
+    <sql id="BriefColumnList" >
+        id, name, operator_id, nested_children_ids, is_deleted
     </sql>
 
     <sql id="DetailColumnList" >
@@ -31,9 +42,9 @@
         FROM indicator
     </select>
 
-    <select id="findByCondition" resultMap="BaseResultMap"  >
+    <select id="findByCondition" resultMap="BriefResultMap"  >
         SELECT
-            <include refid="BaseColumnList" />
+            <include refid="BriefColumnList" />
         FROM indicator
         WHERE is_deleted = 0
             <if test="condition.containsKey('ids')">
