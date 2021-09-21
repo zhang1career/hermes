@@ -16,6 +16,7 @@ import lab.zhang.hermes.exception.ServiceException;
 import lab.zhang.hermes.exception.SqlException;
 import lab.zhang.hermes.util.ArrayUtil;
 import lab.zhang.hermes.util.ListUtil;
+import lab.zhang.hermes.util.MapUtil;
 import lab.zhang.hermes.util.StrUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,16 +93,18 @@ public class IndicatorRepo extends BaseRepo {
         try {
             // indicator
             indicatorEntity = new IndicatorEntity(name, operatorId, operands);
-            // children
+
+            // direct children
             List<Token> operandTokenList = lexerService.tokenListOf(operands);
-            List<Long> targetChildrenIdList = getChildrenIdList(operandTokenList);
+            List<Long> targetChildrenIdList = childrenIdListFrom(operandTokenList);
+
             // nested children
-            Long[] addingChildrenIds = null;
-            if (targetChildrenIdList != null && !targetChildrenIdList.isEmpty()) {
-                List<Long> existedChildrenIdList = getChildrenIdListForUpdate(indicatorEntity);
-                addingChildrenIds = calcAddingChildrenIds(existedChildrenIdList, targetChildrenIdList); // for update
-                Map<Long, AtomicLong> nestedChildrenIdsMap = calcNestedChildrenIds(indicatorEntity, addingChildrenIds, null);
-                indicatorEntity.setNestedChildrenIds(JSON.toJSONString(nestedChildrenIdsMap));
+            Map<Long, Long> targetNestedChildrenIdMap = null;
+            if (targetChildrenIdList != null) {
+                targetNestedChildrenIdMap = sumNestedChildrenIdMapFrom(targetChildrenIdList);
+            }
+            if (targetNestedChildrenIdMap != null) {
+                indicatorEntity.setNestedChildrenIds(JSON.toJSONString(targetNestedChildrenIdMap));
             }
 
             // create indicator
@@ -109,8 +113,8 @@ public class IndicatorRepo extends BaseRepo {
             }
             long indicatorEntityId = indicatorEntity.getId();
             // create indicator relation
-            if (addingChildrenIds != null) {
-                indicatorIndicatorDao.insertChildren(indicatorEntity.getId(), addingChildrenIds);
+            if (targetChildrenIdList != null) {
+                indicatorIndicatorDao.insertChildren(indicatorEntity.getId(), targetChildrenIdList.toArray(new Long[0]));
             }
             // create indicator expression
             Token token = new Token(name, ApolloType.EXTERNAL_OPERATOR, operatorId, operandTokenList);
@@ -141,21 +145,44 @@ public class IndicatorRepo extends BaseRepo {
             indicatorEntity.setName(name);
             indicatorEntity.setOperatorId(operatorId);
             indicatorEntity.setOperands(operands);
-            // children
-            List<Token> operandTokenList = lexerService.tokenListOf(operands);
-            List<Long> targetChildrenIdList = getChildrenIdList(operandTokenList);
-            if (isNestedChildrenLoop(indicatorEntity, targetChildrenIdList)) {
-                throw new ServiceException("loop detected in the nested children");
+
+            // direct children
+            List<IndicatorEntity> existingChildrenList = getChildren(indicatorEntity);
+            List<Long> existingChildrenIdList = null;
+            if (!ListUtil.isNill(existingChildrenList)) {
+                existingChildrenIdList = columnOf(existingChildrenList, IndicatorEntity::getId);
             }
-            // nested children
+            List<Token> operandTokenList = lexerService.tokenListOf(operands);
+            List<Long> targetChildrenIdList = childrenIdListFrom(operandTokenList);
+            // adding/deleting
             Long[] addingChildrenIds = null;
             Long[] deletingChildrenIds = null;
             if (targetChildrenIdList != null) {
-                List<Long> existedChildrenIdList = getChildrenIdListForUpdate(indicatorEntity);
-                addingChildrenIds = calcAddingChildrenIds(existedChildrenIdList, targetChildrenIdList);
-                deletingChildrenIds = calcDeletingChildrenIds(existedChildrenIdList, targetChildrenIdList);
-                Map<Long, AtomicLong> nestedChildrenIdsMap = calcNestedChildrenIds(indicatorEntity, addingChildrenIds, deletingChildrenIds);
-                indicatorEntity.setNestedChildrenIds(JSON.toJSONString(nestedChildrenIdsMap));
+                addingChildrenIds = calcAddingChildrenIds(existingChildrenIdList, targetChildrenIdList);
+                deletingChildrenIds = calcDeletingChildrenIds(existingChildrenIdList, targetChildrenIdList);
+            }
+
+            // nested children
+            Map<Long, Long> targetNestedChildrenIdMap = null;
+            if (targetChildrenIdList != null) {
+                targetNestedChildrenIdMap = sumNestedChildrenIdMapFrom(targetChildrenIdList);
+            }
+            // loop check
+            List<Long> targetNestedChildrenIdList = null;
+            if (targetNestedChildrenIdMap != null) {
+                targetNestedChildrenIdList = new ArrayList<>(targetNestedChildrenIdMap.keySet());
+            }
+            if (targetNestedChildrenIdList != null && isNestedChildrenLoop(indicatorEntity, targetNestedChildrenIdList)) {
+                throw new ServiceException("loop detected in the nested children");
+            }
+            // adding/deleting
+            Map<Long, Long> addingNestedChildrenMap = null;
+            Map<Long, Long> deletingNestedChildrenMap = null;
+            if (targetNestedChildrenIdMap != null) {
+                Map<Long, Long> existedChildrenIdMap = sumNestedChildrenIdMapFrom(indicatorEntity);
+                addingNestedChildrenMap = calcAddingChildrenIdMap(existedChildrenIdMap, targetNestedChildrenIdMap);
+                deletingNestedChildrenMap = calcDeletingChildrenIdMap(existedChildrenIdMap, targetNestedChildrenIdMap);
+                indicatorEntity.setNestedChildrenIds(JSON.toJSONString(targetNestedChildrenIdMap));
             }
 
             // update indicator
@@ -174,7 +201,7 @@ public class IndicatorRepo extends BaseRepo {
             originalExpressionDao.update(originalExpressionEntity);
 
             // recursively update parents' childrenIds
-            updateParentsChildrenIds(indicatorEntity, addingChildrenIds, deletingChildrenIds);
+            updateParentsChildrenIds(indicatorEntity, addingNestedChildrenMap, deletingNestedChildrenMap);
         } catch (Exception e) {
             transactionManager.rollback(txStatus);
             throw e;
@@ -184,10 +211,10 @@ public class IndicatorRepo extends BaseRepo {
         return indicatorEntity;
     }
 
-    private boolean isNestedChildrenLoop(IndicatorEntity indicatorEntity, List<Long> targetChildrenIdList) {
-        List<IndicatorEntity> targetChildrenIndicatorEntityList = getList(targetChildrenIdList);
-        for (IndicatorEntity targetChildIndicatorEntity : targetChildrenIndicatorEntityList) {
-            Map<Long, Long> nestedChildrenIdMap = getNestedChildrenIdMap(targetChildIndicatorEntity);
+    private boolean isNestedChildrenLoop(IndicatorEntity indicatorEntity, List<Long> nestedChildrenIdList) {
+        List<IndicatorEntity> nestedChildrenIndicatorEntityList = getList(nestedChildrenIdList);
+        for (IndicatorEntity childIndicatorEntity : nestedChildrenIndicatorEntityList) {
+            Map<Long, Long> nestedChildrenIdMap = sumNestedChildrenIdMapFrom(childIndicatorEntity);
             if (nestedChildrenIdMap == null) {
                 continue;
             }
@@ -199,7 +226,7 @@ public class IndicatorRepo extends BaseRepo {
     }
 
     @Nullable
-    private List<Long> getChildrenIdList(List<Token> operandTokenList) {
+    private List<Long> childrenIdListFrom(List<Token> operandTokenList) {
         List<Long> childrenIdList = null;
         if (operandTokenList != null && !operandTokenList.isEmpty()) {
             childrenIdList = operandTokenList.stream()
@@ -210,22 +237,19 @@ public class IndicatorRepo extends BaseRepo {
         return childrenIdList;
     }
 
-    private void updateParentsChildrenIds(@NotNull IndicatorEntity indicatorEntity, Long[] addIds, Long[] delIds) {
+    private void updateParentsChildrenIds(@NotNull IndicatorEntity indicatorEntity, Map<Long, Long> addingIdMap, Map<Long, Long> deletingIdMap) {
         List<IndicatorEntity> parentIndicatorEntityList = getParents(indicatorEntity);
-
         // check
         if (ListUtil.isNill(parentIndicatorEntityList)) {
             return;
         }
 
-        // update
-        Map<Long, AtomicLong> childrenIdsMap = calcNestedChildrenIds(indicatorEntity, addIds, delIds);
-        indicatorEntity.setNestedChildrenIds(JSON.toJSONString(childrenIdsMap));
-        indicatorDao.update(indicatorEntity);
-
         // recursively route up
         for (IndicatorEntity parentIndicatorEntity : parentIndicatorEntityList) {
-            updateParentsChildrenIds(parentIndicatorEntity, addIds, delIds);
+            // update
+            setNestedChildrenIds(parentIndicatorEntity, addingIdMap, deletingIdMap);
+            indicatorDao.update(parentIndicatorEntity);
+            updateParentsChildrenIds(parentIndicatorEntity, addingIdMap, deletingIdMap);
         }
     }
 
@@ -234,68 +258,149 @@ public class IndicatorRepo extends BaseRepo {
         return indicatorIndicatorDao.selectParents(indicatorEntity.getId());
     }
 
-    @Nullable
-    private List<Long> getChildrenIdListForUpdate(@NotNull IndicatorEntity indicatorEntity) {
-        List<IndicatorEntity> childrenList = indicatorIndicatorDao.selectChildrenForUpdate(indicatorEntity.getId());
-        if (ListUtil.isNill(childrenList)) {
-            return null;
-        }
-        return columnOf(childrenList, IndicatorEntity::getId);
+    @NotNull
+    private List<IndicatorEntity> getChildren(@NotNull IndicatorEntity indicatorEntity) {
+        return indicatorIndicatorDao.selectChildren(indicatorEntity.getId());
     }
 
     @NotNull
-    private Long[] calcAddingChildrenIds(List<Long> existedChildrenIdList, @NotNull List<Long> targetChildrenIdList) {
-        if (existedChildrenIdList == null || existedChildrenIdList.isEmpty()) {
-            return targetChildrenIdList.toArray(new Long[0]);
+    private Long[] calcAddingChildrenIds(List<Long> existingChildrenIdList, List<Long> targetChildrenIdList) {
+        List<Long> adding = ListUtil.diff(targetChildrenIdList, existingChildrenIdList);
+        return adding.toArray(new Long[0]);
+    }
+
+    @NotNull
+    private Long[] calcDeletingChildrenIds(List<Long> existingChildrenIdList, List<Long> targetChildrenIdList) {
+        List<Long> deleting = ListUtil.diff(existingChildrenIdList, targetChildrenIdList);
+        return deleting.toArray(new Long[0]);
+    }
+
+    @NotNull
+    private Map<Long, Long> calcAddingChildrenIdMap(Map<Long, Long> existingChildrenIdMap, @NotNull Map<Long, Long> targetChildrenIdMap) {
+        if (existingChildrenIdMap == null || existingChildrenIdMap.isEmpty()) {
+            return targetChildrenIdMap;
         }
-        return targetChildrenIdList.stream()
-                .filter(e -> !existedChildrenIdList.contains(e)).toArray(Long[]::new);
+
+        Map<Long, Long> addingIdMap = new HashMap<>();
+        for (Map.Entry<Long, Long> entry : targetChildrenIdMap.entrySet()) {
+            Long id = entry.getKey();
+            Long targetCount = entry.getValue();
+
+            if (!existingChildrenIdMap.containsKey(id)) {
+                addingIdMap.put(id, targetCount);
+                continue;
+            }
+
+            Long existingCount = existingChildrenIdMap.get(id);
+            if (existingCount >= targetCount) {
+                continue;
+            }
+            addingIdMap.put(id, targetCount - existingCount);
+        }
+
+        return addingIdMap;
     }
 
     @Nullable
-    private Long[] calcDeletingChildrenIds(List<Long> existedChildrenIdList, List<Long> targetChildrenIdList) {
-        if (existedChildrenIdList == null || existedChildrenIdList.isEmpty()) {
+    private Map<Long, Long> calcDeletingChildrenIdMap(Map<Long, Long> existingChildrenIdMap, Map<Long, Long> targetChildrenIdMap) {
+        if (existingChildrenIdMap == null || existingChildrenIdMap.isEmpty()) {
             return null;
         }
-        return existedChildrenIdList.stream()
-                .filter(e -> !targetChildrenIdList.contains(e)).toArray(Long[]::new);
+
+        Map<Long, Long> deletingIdMap = new HashMap<>();
+        for (Map.Entry<Long, Long> entry : existingChildrenIdMap.entrySet()) {
+            Long id = entry.getKey();
+            Long existingCount = entry.getValue();
+
+            if (!targetChildrenIdMap.containsKey(id)) {
+                deletingIdMap.put(id, existingCount);
+                continue;
+            }
+
+            Long targetCount = targetChildrenIdMap.get(id);
+            if (existingCount <= targetCount) {
+                continue;
+            }
+            deletingIdMap.put(id, existingCount - targetCount);
+        }
+
+        return deletingIdMap;
     }
 
-    @Nullable
-    private Map<Long, AtomicLong> calcNestedChildrenIds(@NotNull IndicatorEntity indicatorEntity, Long[] addIds, Long[] delIds) {
-        if (ArrayUtil.isNill(addIds) && ArrayUtil.isNill(delIds)) {
-            return null;
+    private void setNestedChildrenIds(@NotNull IndicatorEntity indicatorEntity, Map<Long, Long> addingIdMap, Map<Long, Long> deletingIdMap) {
+        if (MapUtil.isNill(addingIdMap) && MapUtil.isNill(deletingIdMap)) {
+            return;
         }
 
         ConcurrentMap<Long, AtomicLong> nestedChildrenIdsMap = getNestedChildrenIdConcurrentMap(indicatorEntity);
         if (nestedChildrenIdsMap == null) {
             nestedChildrenIdsMap = new ConcurrentHashMap<>(0);
         }
-        if (!ArrayUtil.isNill(addIds)) {
-            for (Long childId : addIds) {
-                if (!nestedChildrenIdsMap.containsKey(childId)) {
-                    nestedChildrenIdsMap.put(childId, new AtomicLong(1));
+        if (!MapUtil.isNill(addingIdMap)) {
+            for (Map.Entry<Long, Long> entry : addingIdMap.entrySet()) {
+                long id = entry.getKey();
+                long count = entry.getValue();
+                if (!nestedChildrenIdsMap.containsKey(id)) {
+                    nestedChildrenIdsMap.put(id, new AtomicLong(count));
                     continue;
                 }
-                nestedChildrenIdsMap.get(childId).incrementAndGet();
+                nestedChildrenIdsMap.get(id).addAndGet(count);
             }
         }
-        if (!ArrayUtil.isNill(delIds)) {
-            for (Long childId : delIds) {
-                if (!nestedChildrenIdsMap.containsKey(childId)) {
+        if (!MapUtil.isNill(deletingIdMap)) {
+            for (Map.Entry<Long, Long> entry : deletingIdMap.entrySet()) {
+                long id = entry.getKey();
+                long count = entry.getValue();
+                if (!nestedChildrenIdsMap.containsKey(id)) {
                     continue;
                 }
-                if (nestedChildrenIdsMap.get(childId).decrementAndGet() <= 0) {
-                    nestedChildrenIdsMap.remove(childId);
+                if (nestedChildrenIdsMap.get(id).addAndGet(-count) <= 0) {
+                    nestedChildrenIdsMap.remove(id);
                 }
             }
         }
 
-        return nestedChildrenIdsMap;
+        indicatorEntity.setNestedChildrenIds(JSON.toJSONString(nestedChildrenIdsMap));
     }
 
     @Nullable
-    private Map<Long, Long> getNestedChildrenIdMap(@NotNull IndicatorEntity indicatorEntity) {
+    private Map<Long, Long> sumNestedChildrenIdMapFrom(List<Long> childrenIdList) {
+        if (childrenIdList == null) {
+            return null;
+        }
+
+        Map<Long, Long> ret = new HashMap<>();
+        for (Long id : childrenIdList) {
+            ret.put(id, 1L);
+        }
+
+        Map<String, Object> condition = new HashMap<>(1);
+        condition.put("ids", childrenIdList);
+        List<IndicatorEntity> indicatorEntityList = indicatorDao.findByCondition(condition);
+        if (indicatorEntityList == null || indicatorEntityList.isEmpty()) {
+            return ret;
+        }
+        for (IndicatorEntity indicatorEntity : indicatorEntityList) {
+            Map<Long, Long> nestedChildrenIdMap = sumNestedChildrenIdMapFrom(indicatorEntity);
+            if (MapUtil.isNill(nestedChildrenIdMap)) {
+                continue;
+            }
+            for (Map.Entry<Long, Long> entry : nestedChildrenIdMap.entrySet()) {
+                long id = entry.getKey();
+                long count = entry.getValue();
+                if (!ret.containsKey(id)) {
+                    ret.put(id, count);
+                    continue;
+                }
+                ret.put(id, ret.get(id) + count);
+            }
+        }
+
+        return ret;
+    }
+
+    @Nullable
+    private Map<Long, Long> sumNestedChildrenIdMapFrom(@NotNull IndicatorEntity indicatorEntity) {
         String childrenIdsStr = indicatorEntity.getNestedChildrenIds();
         if (StrUtil.isNill(childrenIdsStr)) {
             return null;

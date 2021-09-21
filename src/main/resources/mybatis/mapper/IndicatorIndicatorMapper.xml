@@ -6,19 +6,27 @@
     <resultMap id="ParentResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity">
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="VARCHAR" />
 <!--        <collection javaType="ArrayList" property="children" resultMap="ChildResultMap" />-->
     </resultMap>
 
     <resultMap id="ChildResultMap" type="lab.zhang.hermes.entity.indicator.IndicatorEntity">
         <id column="id" property="id" jdbcType="BIGINT" />
         <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="operator_id" property="operatorId" jdbcType="BIGINT" />
+        <result column="nested_children_ids" property="nestedChildrenIds" jdbcType="VARCHAR" />
 <!--        <collection javaType="ArrayList" property="parents" resultMap="ParentResultMap" />-->
     </resultMap>
 
 
     <select id="selectParents" resultMap="ChildResultMap">
         SELECT
-            p.id AS id, p.name AS name
+            p.id AS id,
+            p.name AS name,
+            p.operator_id AS operator_id,
+            p.nested_children_ids AS nested_children_ids,
+            p.is_deleted AS is_deleted
         FROM indicator AS c
         LEFT JOIN indicator_indicator AS r ON c.id = r.child_id
         LEFT JOIN indicator AS p ON r.parent_id = p.id
@@ -27,7 +35,11 @@
 
     <select id="selectParentsForUpdate" resultMap="ChildResultMap">
         SELECT
-            p.id AS id, p.name AS name
+            p.id AS id,
+            p.name AS name,
+            p.operator_id AS operator_id,
+            p.nested_children_ids AS nested_children_ids,
+            p.is_deleted AS is_deleted
         FROM indicator AS c
         LEFT JOIN indicator_indicator AS r ON c.id = r.child_id
         LEFT JOIN indicator AS p ON r.parent_id = p.id
