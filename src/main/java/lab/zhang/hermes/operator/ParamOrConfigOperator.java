@@ -14,6 +14,11 @@ public class ParamOrConfigOperator extends ExternalOperator {
     static private final int PARAM_SIZE = 1;
 
     @Override
+    protected String[] getRequiredParams() {
+        return new String[]{"user_id", "comment", "config", "sql", "sql_params"};
+    }
+
+    @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
         // check
         if (list == null || list.size() < PARAM_SIZE) {

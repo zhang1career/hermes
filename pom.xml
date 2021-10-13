@@ -28,10 +28,10 @@
         <commons-dbutils.version>1.7</commons-dbutils.version>
         <commons-lang3.version>3.9</commons-lang3.version>
         <commons-text.version>1.6</commons-text.version>
+        <docker.image.prefix>springboot</docker.image.prefix>
         <ehcache.version>3.8.1</ehcache.version>
         <fastjson.version>1.2.31</fastjson.version>
         <guava.version>23.0</guava.version>
-        <HikariCP.version>3.4.5</HikariCP.version>
         <junit.version>4.12</junit.version>
         <junitperf.version>1.18.0</junitperf.version>
         <junit-platform-commons.version>1.7.2</junit-platform-commons.version>
@@ -39,6 +39,7 @@
         <mybatis-spring-boot.version>1.3.5</mybatis-spring-boot.version>
         <mysql-connector-java.version>6.0.6</mysql-connector-java.version>
         <vmlens.api.version>1.1.5</vmlens.api.version>
+        <springloaded.version>1.2.8.RELEASE</springloaded.version>
         <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
         <spring.version>5.2.2.RELEASE</spring.version>
     </properties>
@@ -59,6 +60,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
             <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <version>${spring-boot.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -98,6 +105,11 @@
 
         <!--mysql-->
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>${mybatis-spring-boot.version}</version>
@@ -106,11 +118,6 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector-java.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${HikariCP.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-dbutils</groupId>
@@ -179,6 +186,31 @@
                             <version>${lombok.version}</version>
                         </exclude>
                     </excludes>
+                </configuration>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>springloaded</artifactId>
+                        <version>${springloaded.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+                    <dockerDirectory>src/main/docker</dockerDirectory>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
                 </configuration>
             </plugin>
         </plugins>

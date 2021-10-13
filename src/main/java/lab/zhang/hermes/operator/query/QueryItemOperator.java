@@ -7,7 +7,6 @@ import lab.zhang.hermes.operator.QueryOperator;
 import lab.zhang.hermes.service.sql.SqlConfig;
 import lab.zhang.hermes.service.sql.SqlService;
 import org.apache.commons.dbutils.handlers.MapHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -17,6 +16,11 @@ import java.util.List;
  */
 public class QueryItemOperator extends QueryOperator {
     static private final int PARAM_SIZE = 3;
+
+    @Override
+    protected String[] getRequiredParams() {
+        return new String[]{"config", "sql", "sql_params"};
+    }
 
     @Override
     protected Object doCalc(List<? extends Valuable<Object>> list, ParamContext paramContext) {
