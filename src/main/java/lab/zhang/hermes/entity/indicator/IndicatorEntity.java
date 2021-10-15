@@ -35,6 +35,7 @@ public class IndicatorEntity extends BaseEntity {
         this.name = name;
         this.operatorId = operatorId;
         this.operands = operands;
+        this.nestedChildrenIds = "";
     }
 
     public IndicatorEntity(String name, long operatorId, String operands) {
